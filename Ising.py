@@ -11,8 +11,9 @@ class IsingModel:
     """
 
     def __init__(self, dim=100, contact_energy=1, temperature=1, max_sim_time=1000, save_loc=r'./', save_frequency=10,
-                 save_csv=False, save_npz=True, do_plot_state=False, plot_state_frequency=100, calc_energy=False,
-                 calc_magn=False, save_energy=False, save_magn=False):
+                 save_csv=False, save_npz=True, do_plot_state=False, plot_state_frequency=100, save_energy=False,
+                 save_magn=False, e_save_loc=r'energies', m_save_loc=r'magnetizations', calc_energy=False,
+                 calc_magn=False):
         # dimension
 
         self.N = dim
@@ -21,7 +22,19 @@ class IsingModel:
         self.mt = max_sim_time
         self.state = self.init_lattice()
         self.mcs = 0
-        self.save_loc = save_loc
+        self.save_loc = os.path.abspath(save_loc)
+
+        if not os.path.isdir(self.save_loc):
+            os.makedirs(os.path.abspath(self.save_loc))
+
+        self.e_save_loc = os.path.join(self.save_loc, e_save_loc)
+        if not os.path.isdir(self.e_save_loc):
+            os.makedirs(self.e_save_loc)
+
+        self.m_save_loc = os.path.join(self.save_loc, m_save_loc)
+        if not os.path.isdir(self.m_save_loc):
+            os.makedirs(self.m_save_loc)
+
         self.save_freq = save_frequency
         self.save_csv = save_csv
         self.save_npz = save_npz
@@ -35,7 +48,7 @@ class IsingModel:
         if save_energy:
             path = self.save_loc
             path = os.path.abspath(path)
-            path = os.path.join(path, 'energy_step_' + str(self.mcs)+'.csv')
+            path = os.path.join(path, 'energy_step_' + str(self.mcs) + '.csv')
             with open(path, 'w') as f:
                 pass
             e = self.get_state_energy()
@@ -44,12 +57,11 @@ class IsingModel:
         if save_magn:
             path = self.save_loc
             path = os.path.abspath(path)
-            path = os.path.join(path, 'mag_step_' + str(self.mcs)+'.csv')
+            path = os.path.join(path, 'mag_step_' + str(self.mcs) + '.csv')
             with open(path, 'w') as f:
                 pass
             m = self.get_state_magnetization()
             self.do_save_magnetization(m)
-
 
         if save_csv:
             self.save_state_as_csv()
@@ -61,7 +73,6 @@ class IsingModel:
             self.plot_state()
         self.plot_state_frequency = plot_state_frequency
 
-
         return
 
     def init_lattice(self):
@@ -69,26 +80,22 @@ class IsingModel:
 
     def save_state_as_csv(self, file_name='step_'):
         path = self.save_loc
-        path = os.path.abspath(path)
         path = os.path.join(path, file_name + str(self.mcs))
         np.savetxt(path + '.csv', self.state, delimiter=',')
 
     def save_state_as_npz(self, file_name='step_'):
         path = self.save_loc
-        path = os.path.abspath(path)
         path = os.path.join(path, file_name + str(self.mcs))
         np.savez_compressed(path + '.npz', self.state)
 
     def do_save_energy(self, e, file_name='energy_step_'):
         path = self.save_loc
-        path = os.path.abspath(path)
         path = os.path.join(path, file_name + str(self.mcs))
         with open(path, 'a') as f:
             f.write('{}, {}'.format(self.mcs, e))
 
     def do_save_magnetization(self, m, file_name='mag_step_'):
         path = self.save_loc
-        path = os.path.abspath(path)
         path = os.path.join(path, file_name + str(self.mcs))
         with open(path, 'a') as f:
             f.write('{}, {}'.format(self.mcs, m))
@@ -140,7 +147,7 @@ class IsingModel:
                 e += 2 * spin * sum_neig_spins
         e *= self.J
 
-        return e/4  # quadruple count correction
+        return e / 4  # quadruple count correction
 
     def run(self):
         for t in range(1, self.mt):

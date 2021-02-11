@@ -50,19 +50,15 @@ class IsingModel:
             self.calc_magn = True
 
         if save_energy:
-            path = self.save_loc
-            path = os.path.abspath(path)
-            path = os.path.join(path, 'energy_step_' + str(self.mcs) + '.csv')
-            with open(path, 'w') as f:
+            self.energy_file_name = os.path.join(self.e_save_loc, 'energy.csv')
+            with open(self.energy_file_name, 'w') as f:
                 pass
             e = self.get_state_energy()
             self.do_save_energy(e)
 
         if save_magn:
-            path = self.save_loc
-            path = os.path.abspath(path)
-            path = os.path.join(path, 'mag_step_' + str(self.mcs) + '.csv')
-            with open(path, 'w') as f:
+            self.mag_file_name = os.path.join(self.m_save_loc, 'magnetization.csv')
+            with open(self.mag_file_name, 'w') as f:
                 pass
             m = self.get_state_magnetization()
             self.do_save_magnetization(m)
@@ -92,17 +88,15 @@ class IsingModel:
         path = os.path.join(path, file_name + str(self.mcs))
         np.savez_compressed(path + '.npz', self.state)
 
-    def do_save_energy(self, e, file_name='energy_step_'):
-        path = self.save_loc
-        path = os.path.join(path, file_name + str(self.mcs))
-        with open(path, 'a') as f:
-            f.write('{}, {}'.format(self.mcs, e))
+    def do_save_energy(self, e):
+        fn = self.energy_file_name
+        with open(fn, 'a') as f:
+            f.write('{}, {}\n'.format(self.mcs, e))
 
-    def do_save_magnetization(self, m, file_name='mag_step_'):
-        path = self.save_loc
-        path = os.path.join(path, file_name + str(self.mcs))
-        with open(path, 'a') as f:
-            f.write('{}, {}'.format(self.mcs, m))
+    def do_save_magnetization(self, m):
+        fn = self.mag_file_name
+        with open(fn, 'a') as f:
+            f.write('{}, {}\n'.format(self.mcs, m))
 
     def _do_monte_carlo_step(self):
         stt = self.state
@@ -179,6 +173,6 @@ class IsingModel:
 
 
 if __name__ == '__main__':
-    IM = IsingModel(save_npz=True, do_plot_state=False, plot_state_frequency=10)
+    IM = IsingModel(save_npz=False, do_plot_state=False, save_magn=True, save_energy=True, max_sim_time=21)
     IM.run()
     a = 5

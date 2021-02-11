@@ -43,7 +43,11 @@ class IsingModel:
         self.calc_magn = calc_magn
 
         self.save_energy = save_energy
+        if self.save_energy:
+            self.calc_energy = True
         self.save_magn = save_magn
+        if self.save_magn:
+            self.calc_magn = True
 
         if save_energy:
             path = self.save_loc
@@ -144,7 +148,7 @@ class IsingModel:
                 spin = stt[x, y]
                 sum_neig_spins = stt[(x + 1) % N, y] + stt[(x - 1) % N, y] + stt[x, (y + 1) % N] + stt[x, (y - 1) % N]
 
-                e += 2 * spin * sum_neig_spins
+                e -= 2 * spin * sum_neig_spins
         e *= self.J
 
         return e / 4  # quadruple count correction
